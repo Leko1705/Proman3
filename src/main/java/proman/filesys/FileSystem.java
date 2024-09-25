@@ -2,6 +2,7 @@ package proman.filesys;
 
 import proman.application.ApplicationManager;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,7 +21,7 @@ public class FileSystem {
     public static String getInstallationPath(){
 
         if (DEBUG)
-            return "/home/kali/IdeaProjects/test";
+            return System.getProperty("user.dir") + File.separator + "src" + File.separator + "main" + File.separator + "resources";
 
         if (installationPath == null) {
             installationPath = getInstallationPathImpl();

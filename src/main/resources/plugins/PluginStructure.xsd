@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="Plugin"
+           xmlns="Plugin"
+           elementFormDefault="qualified">
+
+
+    <xs:element name="plugin">
+        <xs:complexType>
+            <xs:all minOccurs="0">
+
+
+                <!-- INTERNAL-EP-DEFINITION USE -->
+
+                <xs:element name="extensionPoints" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence minOccurs="0" maxOccurs="unbounded">
+
+                            <xs:element name="extensionPoint">
+                                <xs:complexType>
+                                    <xs:all minOccurs="0">
+
+                                        <xs:element name="with">
+                                            <xs:complexType>
+                                                <xs:attribute name="attribute" type="xs:string" use="required"/>
+                                                <xs:attribute name="implements" type="xs:string" use="required"/>
+                                            </xs:complexType>
+                                        </xs:element>
+
+                                    </xs:all>
+                                    <xs:attribute name="name" type="xs:string" use="required"/>
+                                    <xs:attribute name="beanClass" type="xs:string"/>
+                                    <xs:attribute name="interface" type="xs:string"/>
+                                </xs:complexType>
+                            </xs:element>
+
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+
+
+                <!-- OPEN-API USE -->
+
+                <xs:element name="id" minOccurs="0"/>
+                <xs:element name="name" minOccurs="0"/>
+                <xs:element name="description" minOccurs="0"/>
+
+                <xs:element name="extensions" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:any processContents="skip"
+                                    minOccurs="0" maxOccurs="unbounded"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+
+
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

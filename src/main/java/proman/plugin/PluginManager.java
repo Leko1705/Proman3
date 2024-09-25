@@ -1,5 +1,7 @@
 package proman.plugin;
 
+import proman.threading.BGT;
+
 import java.util.*;
 
 public class PluginManager {
@@ -116,6 +118,14 @@ public class PluginManager {
     public void reload(){
         flush();
         PluginLoader.load();
+    }
+
+    /**
+     * Reloads asynchronous
+     * @see #reload()
+     */
+    public void reloadAsync(){
+        BGT.invokeLater(this::reload);
     }
 
     /**

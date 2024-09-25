@@ -23,6 +23,11 @@ public class BGT {
         bgThread.running = false;
     }
 
+    public static void flush(){
+        while (!bgThread.tasks.isEmpty())
+            Thread.onSpinWait();
+    }
+
 
     private static class BackgroundThread extends Thread {
 
@@ -41,8 +46,9 @@ public class BGT {
         public void run() {
             while (running) {
                 if (!tasks.isEmpty()) {
-                    Runnable task = tasks.poll();
+                    Runnable task = tasks.element();
                     task.run();
+                    tasks.remove();
                 }
                 else {
                     try {
