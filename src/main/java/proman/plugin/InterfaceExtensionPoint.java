@@ -9,7 +9,7 @@ class InterfaceExtensionPoint extends ExtensionPoint {
     }
 
     @Override
-    public void registerExtension(Map<String, String> args) {
+    protected void registerExtension(Map<String, String> args) {
         String implClass = args.get("implementationClass");
 
         if (implClass == null) {

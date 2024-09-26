@@ -19,32 +19,54 @@ public abstract class ExtensionPoint {
         this.epClass = epClass;
     }
 
+    /**
+     * Returns the name for this Extension Point
+     * @return the name for this EP
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * The class of Extensions that can be used with this Extension Point.
+     * @return this EPs' supported Extension Class
+     */
     public Class<?> getEpClass() {
         return epClass;
     }
 
+    /**
+     * registers a new Extension for this EP
+     * @param extension the new Extension
+     * @throws IllegalArgumentException if the provided
+     * exception type is not supported by this EP. To be more precise if
+     * the extension does not subclasses {@link #getEpClass()}
+     */
     public void registerExtension(Object extension) {
+        if (!epClass.isAssignableFrom(extension.getClass()))
+            throw new IllegalArgumentException("extension is not a subclass of required " + epClass.getName() + " type");
         extensions.add(extension);
     }
 
-    public abstract void registerExtension(Map<String, String> args);
+    protected abstract void registerExtension(Map<String, String> args);
 
+    /**
+     * Unregisters the given extension. If the extension is null or is not present
+     * in this EP nothing happens.
+     * @param extension the extension to remove
+     */
     public void unregisterExtension(Object extension) {
         extensions.remove(extension);
     }
 
-    public List<Object> getExtensions() {
-        return Collections.unmodifiableList(extensions);
-    }
-
-    public Stream<Object> stream(){
-        return extensions.stream();
-    }
-
+    /**
+     * Returns a List of all Extensions for this EP that subclass the specific class
+     * @param clazz the requested type
+     * @return a list of registered extensions subclassing {@code clazz}
+     * @throws IllegalArgumentException if the specified {@code clazz}
+     * argument is not an implementation of {@link #getEpClass()}.
+     * @throws NullPointerException if the given class is null
+     */
     public <T> List<T> getExtensions(Class<T> clazz) {
 
         if (clazz == null)

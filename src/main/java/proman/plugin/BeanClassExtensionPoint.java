@@ -14,7 +14,7 @@ class BeanClassExtensionPoint extends ExtensionPoint {
 
 
     @Override
-    public void registerExtension(Map<String, String> args) {
+    protected void registerExtension(Map<String, String> args) {
         Class<?> beanClass = getEpClass();
         Object bean = instance(beanClass.getName());
 

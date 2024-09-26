@@ -3,7 +3,7 @@
 
     <extensionPoints>
         <extensionPoint name="diagramType" interface="proman.diagrams.DiagramType"/>
-        <extensionPoint name="other" beanClass="proman.plugin.eps.ExampleBean"/>
+        <extensionPoint name="other" beanClass="proman.plugin.beans.ExampleBean"/>
     </extensionPoints>
 
 </plugin>

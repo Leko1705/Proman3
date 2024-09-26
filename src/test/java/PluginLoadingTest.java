@@ -1,5 +1,5 @@
 import proman.plugin.PluginManager;
-import proman.plugin.eps.ExampleBean;
+import proman.plugin.beans.ExampleBean;
 import proman.threading.BGT;
 
 import java.util.List;

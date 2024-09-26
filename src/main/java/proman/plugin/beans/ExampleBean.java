@@ -1,4 +1,4 @@
-package proman.plugin.eps;
+package proman.plugin.beans;
 
 import proman.diagrams.DiagramType;
 import proman.plugin.Attribute;
