@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<plugin xmlns="Plugin">
+
+    <extensionPoints>
+        <extensionPoint name="diagramType" interface="proman.diagrams.DiagramType"/>
+        <extensionPoint name="other" beanClass="proman.plugin.eps.ExampleBean"/>
+    </extensionPoints>
+
+</plugin>

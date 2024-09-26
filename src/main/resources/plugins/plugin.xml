@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<plugin xmlns="Plugin">
+
+    <id>unique.id.of.the.plugin</id>
+
+    <name>Name of this plugin</name>
+
+    <description>
+        This is a description of this plugin.
+        It can be as long as necessary.
+    </description>
+
+
+    <extensions>
+        <!-- put all your plugin extensions here -->
+
+        <diagramType implementationClass="proman.diagrams.types.UMLClassDiagramType"/>
+
+        <other foo="proman.diagrams.types.UMLClassDiagramType"/>
+
+    </extensions>
+
+</plugin>
