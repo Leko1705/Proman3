@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class BeanClassExtensionPoint extends ExtensionPoint {
+class BeanClassExtensionPoint extends ExtensionPoint {
 
 
     public BeanClassExtensionPoint(String name, Class<?> epClass) {

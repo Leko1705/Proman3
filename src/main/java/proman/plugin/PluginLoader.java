@@ -9,10 +9,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.*;
 
-public class PluginLoader {
+class PluginLoader {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    protected static void load(){
+    public static void load(){
         Assertions.assertBGT("PluginLoader.load requires BGT");
 
         File pluginDir = new File(FileSystem.getInstallationPath() + File.separator + "plugins");

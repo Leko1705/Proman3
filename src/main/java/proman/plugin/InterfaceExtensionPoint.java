@@ -2,7 +2,7 @@ package proman.plugin;
 
 import java.util.Map;
 
-public class InterfaceExtensionPoint extends ExtensionPoint {
+class InterfaceExtensionPoint extends ExtensionPoint {
 
     public InterfaceExtensionPoint(String name, Class<?> epClass) {
         super(name, epClass);
