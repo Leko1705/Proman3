@@ -13,7 +13,12 @@
 
     <extensions>
         <!-- put all your plugin extensions here -->
+
         <diagramType implementationClass="proman.diagrams.types.UMLClassDiagramType"/>
+
+        <other foo="proman.diagrams.types.UMLClassDiagramType"
+                bar="test"/>
+
     </extensions>
 
 </plugin>

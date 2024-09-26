@@ -1,18 +1,13 @@
 package proman.plugin;
 
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import proman.filesys.FileSystem;
 import proman.utils.Assertions;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class PluginLoader {
 
@@ -29,7 +24,7 @@ public class PluginLoader {
     }
 
     private static void loadFromFiles(File[] files){
-        List<PluginDescriptor> plugins = new ArrayList<>();
+        Map<String, Map<String, String>> extensions = new HashMap<>();
 
         PluginManager manager = PluginManager.getInstance();
         for (File file : files) {
@@ -39,25 +34,29 @@ public class PluginLoader {
                 DocumentBuilder builder = dbFactory.newDocumentBuilder();
                 Element root = builder.parse(file).getDocumentElement();
 
-                Map<String, String> header = loadMetaDate(root);
-                Map<String, Class<?>> extensionPoints = loadExtensionPoints(root);
+                if (!root.getTagName().equals("plugin"))
+                    continue;
 
-                for (Map.Entry<String, Class<?>> entry : extensionPoints.entrySet()) {
-                    manager.registerExtensionPoint(entry.getKey(), entry.getValue());
-                }
+                Map<String, String> header = loadMetaData(root);
+
+                // extension points are then registered in PluginManager
+                loadExtensionPoints(root);
 
                 if (header != null) {
-                    Map<String, Class<?>> extensions = loadExtensions(root);
+                    extensions.putAll(loadExtensions(root));
 
                     PluginDescriptor descriptor = new PluginDescriptorImpl(
                             file.getAbsolutePath(),
                             header.get("id"),
                             header.get("name"),
-                            header.get("description"),
-                            extensionPoints,
-                            extensions);
+                            header.get("description")
+                    );
 
-                    plugins.add(descriptor);
+                    if (manager.getPlugin(descriptor.getId()) != null){
+                        // TODO log duplicate plugin definition error
+                        continue;
+                    }
+                    manager.registerPlugin(descriptor);
                 }
             }
             catch (Exception e) {
@@ -65,11 +64,9 @@ public class PluginLoader {
             }
         }
 
-        for (PluginDescriptor descriptor : plugins) {
-            for (Map.Entry<String, Class<?>> entry : descriptor.getExtensions().entrySet()) {
-                manager.checkAndRegisterUsage(entry.getKey(), entry.getValue());
-            }
-            manager.registerPlugin(descriptor);
+        for (Map.Entry<String, Map<String, String>> entry : extensions.entrySet()) {
+            Map<String, String> args = entry.getValue();
+            manager.checkAndRegisterExtension(entry.getKey(), args);
         }
     }
 
@@ -79,7 +76,7 @@ public class PluginLoader {
     }
 
 
-    private static Map<String, String> loadMetaDate(Element root) {
+    private static Map<String, String> loadMetaData(Element root) {
         NodeList list = root.getElementsByTagName("id");
         if (list.getLength() != 1) return null;
         String id = list.item(0).getTextContent();
@@ -99,8 +96,8 @@ public class PluginLoader {
     }
 
 
-    private static Map<String, Class<?>> loadExtensionPoints(Element root) {
-        Map<String, Class<?>> localExtensionPoint = new HashMap<>();
+
+    private static void loadExtensionPoints(Element root) {
 
         NodeList list = root.getElementsByTagName("extensionPoints");
         for (int i = 0; i < list.getLength(); i++) {
@@ -110,26 +107,66 @@ public class PluginLoader {
             for (int j = 0; j < subList.getLength(); j++) {
                 Element extension = (Element) subList.item(j);
                 String epName = extension.getAttribute("name");
-                String interfaceName = extension.getAttribute("interface");
 
-                Class<?> interfaceClass;
-                try {
-                    interfaceClass = Class.forName(interfaceName);
-                }
-                catch (ClassNotFoundException e) {
-                    // TODO log error
-                    continue;
+                Class<?> interfaceClass = null;
+                Class<?> beanClass = null;
+
+                if (extension.hasAttribute("interface")) {
+                    interfaceClass = getClassFromAttribute("interface", extension);
                 }
 
-                localExtensionPoint.put(epName, interfaceClass);
+                if (extension.hasAttribute("beanClass")) {
+                    beanClass = getClassFromAttribute("beanClass", extension);
+                }
+
+                ExtensionPoint ep = createEP(interfaceClass, beanClass, epName);
+
+                PluginManager.getInstance().registerExtensionPoint(ep);
             }
         }
 
-        return localExtensionPoint;
     }
 
-    private static Map<String, Class<?>> loadExtensions(Element root) {
-        Map<String, Class<?>> localExtensions = new HashMap<>();
+    private static ExtensionPoint createEP(Class<?> interfaceClass,
+                                           Class<?> beanClass,
+                                           String epName) {
+
+        if (interfaceClass == null && beanClass == null) {
+            throw new IllegalStateException(
+                    "neither interface nor bean class is defined for ep");
+        }
+
+        if (interfaceClass != null && beanClass != null) {
+            throw new IllegalArgumentException(
+                    "both, interface and bean class are defined for ep");
+        }
+
+        Class<?> clazz = interfaceClass == null ? beanClass : interfaceClass;
+        boolean isInterface = clazz == interfaceClass;
+
+
+        if (isInterface)
+            return new InterfaceExtensionPoint(epName, clazz);
+        else
+            return new BeanClassExtensionPoint(epName, clazz);
+    }
+
+
+    private static Class<?> getClassFromAttribute(String attributeName, Element element) {
+        String interfaceName = element.getAttribute(attributeName);
+
+        Class<?> interfaceClass = null;
+        try {
+            interfaceClass = Class.forName(interfaceName);
+        } catch (ClassNotFoundException e) {
+            // TODO log error
+        }
+        return interfaceClass;
+    }
+
+
+    private static Map<String, Map<String, String>> loadExtensions(Element root) {
+        Map<String, Map<String, String>> localExtensions = new HashMap<>();
 
         NodeList list = root.getElementsByTagName("extensions");
 
@@ -144,18 +181,18 @@ public class PluginLoader {
                     Element extensionElement = (Element) extensionNode;
 
                     String epName = extensionElement.getTagName();
-                    String implementationClassName = extensionElement.getAttribute("implementationClass");
 
-                    Class<?> implementationClass;
-                    try {
-                        implementationClass = Class.forName(implementationClassName);
-                    }
-                    catch (ClassNotFoundException e) {
-                        // TODO log error
-                        continue;
+                    Map<String, String> args = new HashMap<>();
+                    NamedNodeMap attrMap = extensionElement.getAttributes();
+
+                    for (int k = 0; k < attrMap.getLength(); k++) {
+                        Node attrNode = attrMap.item(k);
+                        if (attrNode.getNodeType() != Node.ATTRIBUTE_NODE) continue;
+                        Attr attr = (Attr) attrNode;
+                        args.put(attr.getName(), attr.getValue());
                     }
 
-                    localExtensions.put(epName, implementationClass);
+                    localExtensions.put(epName, args);
                 }
 
             }
@@ -163,6 +200,5 @@ public class PluginLoader {
 
         return localExtensions;
     }
-
 
 }

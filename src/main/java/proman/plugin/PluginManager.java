@@ -2,6 +2,8 @@ package proman.plugin;
 
 import proman.threading.BGT;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.util.*;
 
 public class PluginManager {
@@ -19,44 +21,37 @@ public class PluginManager {
     private PluginManager() {}
 
 
-    private final Map<String, Class<?>> extensionPoints = new HashMap<>();
-    private final Map<String, List<Object>> extensions = new HashMap<>();
+    private final Map<String, ExtensionPoint> extensionPoints = new HashMap<>();
     private final Map<String, PluginDescriptor> plugins = new HashMap<>();
 
 
-    protected void registerExtensionPoint(String extensionPointName, Class<?> extensionPointClass) {
-        Objects.requireNonNull(extensionPointName);
-        Objects.requireNonNull(extensionPointClass);
+    protected void registerExtensionPoint(ExtensionPoint ep) {
+        Objects.requireNonNull(ep);
 
-        if (extensionPoints.containsKey(extensionPointName)) {
+        if (extensionPoints.containsKey(ep.getName())) {
             // TODO log error "ep already defined"
             return;
         }
 
-        extensionPoints.put(extensionPointName, extensionPointClass);
+        extensionPoints.put(ep.getName(), ep);
     }
 
-    protected void checkAndRegisterUsage(String name, Class<?> clazz) {
-        Objects.requireNonNull(name);
-        Objects.requireNonNull(clazz);
 
-        if (!extensionPoints.containsKey(name)) {
+    protected void checkAndRegisterExtension(String epName, Map<String, String> args) {
+        Objects.requireNonNull(epName);
+        Objects.requireNonNull(args);
+
+
+        ExtensionPoint ep = this.extensionPoints.get(epName);
+
+        if (ep == null) {
             // TODO log error "no such ep defined"
             return;
         }
 
-        Object instance;
-        try {
-            instance = clazz.getConstructor().newInstance();
-        }
-        catch (Exception e) {
-            // TODO log error (unexpected instantiation exception; maybe non-empty constructor?)
-            return;
-        }
-
-        List<Object> extensions = this.extensions.computeIfAbsent(name, k -> new ArrayList<>());
-        extensions.add(instance);
+        ep.registerExtension(args);
     }
+
 
     protected void registerPlugin(PluginDescriptor descriptor) {
         Objects.requireNonNull(descriptor);
@@ -66,38 +61,14 @@ public class PluginManager {
     /**
      * Returns a List of all Extensions from a specific extensionPoint that
      * subclasses a specific class
-     * @param extensionName the name of the extension type to load
-     * @param interfaceClass the specific class to which
+     * @param epName the name of the extension point to load
      * @return a list of registered extensions from the specified {@code extensionName},
      *      subclassing {@code interfaceClass}
-     * @param <T> the type if specified class for correct evaluation
      * @throws IllegalArgumentException if the specified {@code interfaceClass}
      * argument is not an implementation of the EPs provided interface.
      */
-    public <T> List<T> getExtension(String extensionName, Class<T> interfaceClass) {
-        Class<?> epClass = extensionPoints.get(extensionName);
-        if (epClass == null) {
-            return List.of();
-        }
-
-        if (!epClass.isAssignableFrom(interfaceClass)) {
-            throw new IllegalArgumentException("Extension '" + extensionName + "' is not of type '" + interfaceClass.getName() + "'");
-        }
-
-        List<Object> classes = extensions.get(extensionName);
-
-        if (classes == null || classes.isEmpty()) {
-            return List.of();
-        }
-
-        List<T> extensionSet = new ArrayList<>(classes.size());
-        for (Object instance : classes) {
-            if (interfaceClass.isAssignableFrom(instance.getClass())) {
-                extensionSet.add(checkedCast(instance));
-            }
-        }
-
-        return Collections.unmodifiableList(extensionSet);
+    public ExtensionPoint getExtensionPoint(String epName) {
+        return extensionPoints.get(epName);
     }
 
     /**
@@ -134,7 +105,6 @@ public class PluginManager {
      */
     public void flush(){
         extensionPoints.clear();
-        extensions.clear();
         plugins.clear();
     }
 

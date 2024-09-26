@@ -1,7 +1,5 @@
 package proman.plugin;
 
-import java.util.Map;
-
 public interface PluginDescriptor {
 
     String getFilePath();
@@ -11,9 +9,5 @@ public interface PluginDescriptor {
     String getName();
 
     String getDescription();
-
-    Map<String, Class<?>> getExtensionPoints();
-
-    Map<String, Class<?>> getExtensions();
 
 }
