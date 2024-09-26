@@ -2,9 +2,11 @@ package proman.plugin.eps;
 
 import proman.diagrams.DiagramType;
 import proman.plugin.Attribute;
+import proman.plugin.Required;
 
 public class ExampleBean {
 
+    @Required
     @Attribute("foo")
     public DiagramType type;
 
@@ -15,7 +17,7 @@ public class ExampleBean {
     public String toString() {
         return "DiagramBean{" +
                 "foo=" + type +
-                ", bar='" + some + '\'' +
+                ", bar=" + some +
                 '}';
     }
 }

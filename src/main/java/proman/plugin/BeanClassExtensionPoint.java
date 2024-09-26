@@ -29,6 +29,9 @@ public class BeanClassExtensionPoint extends ExtensionPoint {
             String havingAttributeName = field.getAnnotation(Attribute.class).value();
 
             if (!args.containsKey(havingAttributeName)) {
+                if (!field.isAnnotationPresent(Required.class))
+                    continue;
+
                 // TODO log missing attribute for field field.getName()
                 return;
             }

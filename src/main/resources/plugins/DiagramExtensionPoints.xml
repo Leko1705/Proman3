@@ -2,11 +2,8 @@
 <plugin xmlns="Plugin">
 
     <extensionPoints>
-
         <extensionPoint name="diagramType" interface="proman.diagrams.DiagramType"/>
-
         <extensionPoint name="other" beanClass="proman.plugin.eps.ExampleBean"/>
-
     </extensionPoints>
 
 </plugin>

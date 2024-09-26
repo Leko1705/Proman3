@@ -16,8 +16,7 @@
 
         <diagramType implementationClass="proman.diagrams.types.UMLClassDiagramType"/>
 
-        <other foo="proman.diagrams.types.UMLClassDiagramType"
-                bar="test"/>
+        <other foo="proman.diagrams.types.UMLClassDiagramType"/>
 
     </extensions>
 
